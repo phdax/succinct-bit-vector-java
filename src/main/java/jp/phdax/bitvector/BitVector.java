@@ -7,6 +7,7 @@ public class BitVector {
 	private int[] rankIdx;
 	private int[] selectIdx;
 	private int wholeRank1;
+	private static final long MOD64MASK = 0b111111;
 	
 	BitVector(int size, long[] bits) {
 		this.size = size;
@@ -30,7 +31,7 @@ public class BitVector {
 	}
 	
 	public boolean pos(int idx) {
-		return false;
+		return ((bits[idx >>> 6] >>> (idx & MOD64MASK)) & 1) != 0;
 	}
 	
 	public int rank1(int idx) {
