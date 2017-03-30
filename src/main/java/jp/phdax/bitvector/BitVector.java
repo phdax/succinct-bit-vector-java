@@ -8,6 +8,7 @@ public class BitVector {
 	private int[] selectIdx;
 	private int wholeRank1;
 	private static final long MOD64MASK = 0b111111;
+	private static final int MOD64MASK_I = 0b111111;
 	
 	BitVector(int size, long[] bits) {
 		this.size = size;
@@ -23,11 +24,12 @@ public class BitVector {
 			rankIdx[i] = sum;
 			sum += Long.bitCount(bits[i]);
 			//select用インデックス：trueビットが累積で64の倍数を超えた位置を記録していく
-			if(decimal64 * 64 < sum) {
-				selectIdx[decimal64] = decimal64*64 + bitPos(bits[i], sum%64);
+			if(decimal64<<6 < sum) {
+				selectIdx[decimal64] = decimal64<<6 + bitPos(bits[i], sum&MOD64MASK_I);
 				decimal64++;
 			}
 		}
+		wholeRank1 = sum;
 	}
 	
 	public boolean pos(int idx) {
@@ -35,18 +37,29 @@ public class BitVector {
 	}
 	
 	public int rank1(int idx) {
-		return 0;
+		if(idx < 0) return 0;
+		if(size <= idx) return wholeRank1;
+		int mod = idx & MOD64MASK_I;
+		int rank = rankIdx[idx >>> 6];
+		rank += Long.bitCount(bits[idx] & (-1 >>> (64-mod)));
+		return rank;
 	}
 	
 	public int rank0(int idx) {
-		return 0;
+		if(idx < 0) return 0;
+		if(size <= idx) return size-wholeRank1;
+		return idx - rank1(idx) + 1;
 	}
 
 	public int select1(int rank) {
+		if(rank < 0 || size <= rank) return -1;
+		
 		return 0;
 	}
-	
+		
 	public int select0(int rank) {
+		if(rank < 0 || size <= rank) return -1;
+		
 		return 0;
 	}
 	
