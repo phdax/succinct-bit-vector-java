@@ -4,17 +4,81 @@ import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-
 public class BitVectorTest {
-
+	
+	@Test
+	public void posTest() {
+		posTestImpl(l(0b01000101), 0, "is", true);
+		posTestImpl(l(0b01000101), 1, "is", false);
+		posTestImpl(l(0b01000101), 2, "is", true);
+		posTestImpl(l(0b01000101), 3, "is", false);
+		posTestImpl(l(0b01000101), 4, "is", false);
+		posTestImpl(l(0b01000101), 5, "is", false);
+		posTestImpl(l(0b01000101), 6, "is", true);
+		posTestImpl(l(0b01000101), 7, "is", false);
+		posTestImpl(l(0b01000101), 63, "is", false);
+		
+		posTestImpl(l(0b01000101, 0b10111010), 64+0, "is", false);
+		posTestImpl(l(0b01000101, 0b10111010), 64+1, "is", true);
+		posTestImpl(l(0b01000101, 0b10111010), 64+2, "is", false);
+		posTestImpl(l(0b01000101, 0b10111010), 64+3, "is", true);
+		posTestImpl(l(0b01000101, 0b10111010), 64+4, "is", true);
+		posTestImpl(l(0b01000101, 0b10111010), 64+5, "is", true);
+		posTestImpl(l(0b01000101, 0b10111010), 64+6, "is", false);
+		posTestImpl(l(0b01000101, 0b10111010), 64+7, "is", true);
+		posTestImpl(l(0b01000101, 0b10111010), 64+63, "is", false);
+		posTestImpl(l(0b01000101, 0b10111010), 64+9999, "is", false);
+	}
+	private void posTestImpl(long[] bits, int pos, String is, boolean exp) {
+		BitVector bv = new BitVector(bits.length*Long.SIZE, bits);
+		boolean act = bv.pos(pos);
+		assertThat(act, is(exp));
+	}
+		
 	@Test
 	public void rank1Test() {
+		rank1TestImpl(l(0b01000101), 0, "is", 1);
+		rank1TestImpl(l(0b01000101), 1, "is", 1);
+		rank1TestImpl(l(0b01000101), 2, "is", 2);
+		rank1TestImpl(l(0b01000101), 3, "is", 2);
+		rank1TestImpl(l(0b01000101), 4, "is", 2);
+		rank1TestImpl(l(0b01000101), 5, "is", 2);
+		rank1TestImpl(l(0b01000101), 6, "is", 3);
+		rank1TestImpl(l(0b01000101), 7, "is", 3);
+		rank1TestImpl(l(0b01000101), 64, "is", 3);
+		rank1TestImpl(l(0b01000101), 9999, "is", 3);
 		
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+0, "is", 3);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+1, "is", 4);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+2, "is", 4);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+3, "is", 5);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+4, "is", 6);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+5, "is", 7);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+6, "is", 7);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+7, "is", 8);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+64, "is", 8);
+		rank1TestImpl(l(0b01000101, 0b10111010), 64+9999, "is", 8);
+	}
+	private void rank1TestImpl(long[] bits, int pos, String is, int exp) {
+		BitVector bv = new BitVector(bits.length*Long.SIZE, bits);
+		int act = bv.rank1(pos);
+		assertThat(act, is(exp));
 	}
 	
 	@Test
 	public void bitPosTest() {
-		assertThat(BitVector.bitPos(0b00100, 1), is(3));
+		assertThat(BitVector.bitPos(0b0, 0), is(-1));
+		assertThat(BitVector.bitPos(0b0, 1), is(-1));
+		assertThat(BitVector.bitPos(0b00010000, 1), is(5));
+		assertThat(BitVector.bitPos(0b00010010, 2), is(5));
+		assertThat(BitVector.bitPos(0b00010010, 3), is(-1));
+		assertThat(BitVector.bitPos(0b11111111, 8), is(8));
+		assertThat(BitVector.bitPos(0b11111111, 9), is(-1));
+		assertThat(BitVector.bitPos(0b1111111111111111111111111111111111111111111111111111111111111111L, 64), is(64));
+		assertThat(BitVector.bitPos(0b1111111111111111111111111111111111111111111111111111111111111111L, 65), is(-1));	
 	}
 	
+	private static long[] l(long... longs) {
+		return longs;
+	}
 }

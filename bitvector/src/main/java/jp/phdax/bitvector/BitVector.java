@@ -15,9 +15,9 @@ public class BitVector {
 		this.size = size;
 		this.bits = bits;
 		
-		rankBlock = new int[bits.length >>> 6];
-		selectBlock1 = new int[bits.length >>> 6];
-		selectBlock0 = new int[bits.length >>> 6];
+		rankBlock = new int[bits.length];
+		selectBlock1 = new int[bits.length];
+		selectBlock0 = new int[bits.length];
 		
 		int sumT=0;
 		int sumF=0;
@@ -47,6 +47,8 @@ public class BitVector {
 	}
 	
 	public final boolean pos(int idx) {
+		if(idx < 0) return false;
+		if(size <= idx) return false;
 		return ((bits[idx >>> 6] >>> (idx & MOD64MASK)) & 1) != 0;
 	}
 	
@@ -55,7 +57,7 @@ public class BitVector {
 		if(size <= idx) return wholeRank1;
 		int mod = idx & MOD64MASK_I;
 		int rank = rankBlock[idx >>> 6];
-		rank += Long.bitCount(bits[idx] & (-1 >>> 64-mod));
+		rank += Long.bitCount(bits[idx >>> 6] & (-1L >>> 64-mod-1));
 		return rank;
 	}
 	
@@ -68,14 +70,14 @@ public class BitVector {
 	public final int select1(int rank) {
 		if(rank < 0 || size <= rank) return -1;
 		int idx64 = selectBlock1[rank >>> 6];
-		int idx = lineSearch1(idx64 >>> 6, rank);
+		int idx = linerSearch1(idx64 >>> 6, rank);
 		return bitPos(bits[idx], rank-rankBlock[idx >>> 6]);
 	}
 		
 	public final int select0(int rank) {
 		if(rank < 0 || size <= rank) return -1;
 		int idx64 = selectBlock0[rank >>> 6];
-		int idx = lineSearch0(idx64 >>> 6, rank);
+		int idx = linerSearch0(idx64 >>> 6, rank);
 		return bitPos(~bits[idx], rank-(size-rankBlock[idx >>> 6]));
 	}
 	
@@ -83,11 +85,11 @@ public class BitVector {
 	 * <code>rankBlock</code>を<code>idx</code>から線形探索して、
 	 * <code>rank</code>以下となる最大のランク値のインデックスを返します。
 	 */
-	private final int lineSearch1(int idx, int rank1) {
+	private final int linerSearch1(int idx, int rank1) {
 		for(; rankBlock[idx]<rank1; idx++);
 		return idx;
 	}
-	private final int lineSearch0(int idx, int rank0) {
+	private final int linerSearch0(int idx, int rank0) {
 		for(; size-rankBlock[idx]<rank0; idx++);
 		return idx;
 	}
@@ -98,7 +100,8 @@ public class BitVector {
 	 * テストのためpublic
 	 */
 	public static final int bitPos(long bits, int n) {
-		for(bits&=bits-1; n>1; n--);
-		return (int)(bits ^ (bits-1))-1;
+		if(n <= 0 || Long.bitCount(bits) < n) return -1;
+		for(; n>1; bits&=(bits-1), n--);
+		return Long.bitCount(bits ^ (bits-1));
 	}
 }
