@@ -7,7 +7,8 @@ public class BitVector {
 	private final int[] rankBlock;
 	private final int[] selectBlock1;
 	private final int[] selectBlock0;
-	private final int wholeRank1;
+	private final int sum1;
+	private final int sum0;
 	private static final long MOD64MASK = 0b111111;
 	private static final int MOD64MASK_I = 0b111111;
 	
@@ -15,31 +16,31 @@ public class BitVector {
 		this.size = size;
 		this.bits = bits;
 		
-		rankBlock = new int[bits.length];
+		rankBlock = new int[bits.length+1];
 		selectBlock1 = new int[bits.length];
 		selectBlock0 = new int[bits.length];
 		
-		int sumT=0;
-		int sumF=0;
-		int decimal64T = 0;
-		int decimal64F = 0;
+		int sum1=0;
+		int sum0=0;
+		int accLimit1 = 64;
+		int accLimit0 = 64;
 		for(int i=0; i<bits.length; i++) {
-			//rank用ブロック：各longのtrueビットの累積値を記録する
-			rankBlock[i] = sumT;
+			rankBlock[i] = sum1;
+			if(accLimit1 < sum1) {
+				selectBlock1[accLimit1 >>> 6] = i;
+				accLimit1 += 64;
+			}
+			if(accLimit0 < sum0) {
+				selectBlock0[accLimit0 >>> 6] = i;
+				accLimit0 += 64;
+			}
 			long bitCount = Long.bitCount(bits[i]);
-			sumT += bitCount;
-			sumF += 64-bitCount;
-			//select用ブロック：true/falseビットが累積で64の倍数を超えた位置を記録していく
-			if(decimal64T<<6 < sumT) {
-				selectBlock1[decimal64T] = (decimal64T<<6) + bitPos(bits[i], sumT&MOD64MASK_I);
-				decimal64T++;
-			}
-			if(decimal64F<<6 < sumF) {
-				selectBlock0[decimal64F] = (decimal64F<<6) + bitPos(~bits[i], sumF&MOD64MASK_I);
-				decimal64F++;
-			}
+			sum1 += bitCount;
+			sum0 += 64-bitCount;
 		}
-		wholeRank1 = sumT;
+		rankBlock[bits.length] = sum1;
+		this.sum1 = sum1;
+		this.sum0 = sum0;
 	}
 	
 	public final int size() {
@@ -54,7 +55,7 @@ public class BitVector {
 	
 	public final int rank1(int idx) {
 		if(idx < 0) return 0;
-		if(size <= idx) return wholeRank1;
+		if(size <= idx) return sum1;
 		int mod = idx & MOD64MASK_I;
 		int rank = rankBlock[idx >>> 6];
 		rank += Long.bitCount(bits[idx >>> 6] & (-1L >>> 64-mod-1));
@@ -63,45 +64,36 @@ public class BitVector {
 	
 	public final int rank0(int idx) {
 		if(idx < 0) return 0;
-		if(size <= idx) return size-wholeRank1;
+		if(size <= idx) return size-sum1;
 		return idx - rank1(idx) + 1;
 	}
 
 	public final int select1(int rank) {
-		if(rank < 0 || size <= rank) return -1;
-		int idx64 = selectBlock1[rank >>> 6];
-		int idx = linerSearch1(idx64 >>> 6, rank);
-		return bitPos(bits[idx], rank-rankBlock[idx >>> 6]);
+		if(rank <= 0 || sum1 < rank) return -1;
+		int lowerLimit = selectBlock1[rank >>> 6];
+		int idx = linerSearch1(lowerLimit, rank);
+		return (idx << 6) + bitPos(bits[idx], rank-rankBlock[idx]);
 	}
 		
 	public final int select0(int rank) {
-		if(rank < 0 || size <= rank) return -1;
-		int idx64 = selectBlock0[rank >>> 6];
-		int idx = linerSearch0(idx64 >>> 6, rank);
-		return bitPos(~bits[idx], rank-(size-rankBlock[idx >>> 6]));
+		if(rank <= 0 || sum0 < rank) return -1;
+		int lowerLimit = selectBlock0[rank >>> 6];
+		int idx = linerSearch0(lowerLimit, rank);
+		return (idx << 6) + bitPos(~bits[idx], rank-(sum1-rankBlock[idx]));
 	}
 	
-	/**
-	 * <code>rankBlock</code>を<code>idx</code>から線形探索して、
-	 * <code>rank</code>以下となる最大のランク値のインデックスを返します。
-	 */
 	private final int linerSearch1(int idx, int rank1) {
 		for(; rankBlock[idx]<rank1; idx++);
-		return idx;
+		return idx-1;
 	}
 	private final int linerSearch0(int idx, int rank0) {
 		for(; size-rankBlock[idx]<rank0; idx++);
-		return idx;
+		return idx-1;
 	}
 	
-	/**
-	 * ビット列<code>bits</code>の<code>n</code>番目にあるtrueビットの位置を返します。<br>
-	 * <code>n</code>が必ず<code>Long.bitCount(bits)</code>以下である必要があります。<br>
-	 * テストのためpublic
-	 */
 	public static final int bitPos(long bits, int n) {
 		if(n <= 0 || Long.bitCount(bits) < n) return -1;
 		for(; n>1; bits&=(bits-1), n--);
-		return Long.bitCount(bits ^ (bits-1));
+		return Long.bitCount(bits ^ (bits-1))-1;
 	}
 }

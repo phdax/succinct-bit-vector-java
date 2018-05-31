@@ -1,2 +1,5 @@
 # succinct-bit-vector-java
-Simple implementation of succinct bit vector.
+簡潔ビットベクトルの簡易的な実装です。
+
+現状、rank用インデックスがO(N)となる実装しか用意していないため、厳密には簡潔ビットベクトルではありません。
+
