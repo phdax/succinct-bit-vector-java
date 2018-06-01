@@ -17,30 +17,28 @@ public class BitVector {
 		this.bits = bits;
 		
 		rankBlock = new int[bits.length+1];
-		selectBlock1 = new int[bits.length];
-		selectBlock0 = new int[bits.length];
-		
-		int sum1=0;
-		int sum0=0;
-		int accLimit1 = 64;
-		int accLimit0 = 64;
 		for(int i=0; i<bits.length; i++) {
-			rankBlock[i] = sum1;
-			if(accLimit1 < sum1) {
-				selectBlock1[accLimit1 >>> 6] = i;
-				accLimit1 += 64;
-			}
-			if(accLimit0 < sum0) {
-				selectBlock0[accLimit0 >>> 6] = i;
-				accLimit0 += 64;
-			}
-			long bitCount = Long.bitCount(bits[i]);
-			sum1 += bitCount;
-			sum0 += 64-bitCount;
+			rankBlock[i+1] = rankBlock[i] + Long.bitCount(bits[i]);
 		}
-		rankBlock[bits.length] = sum1;
-		this.sum1 = sum1;
-		this.sum0 = sum0;
+		this.sum1 = rankBlock[bits.length];
+		this.sum0 = size - sum1;
+		
+		selectBlock1 = new int[(this.sum1 >>> 6) + 1];
+		selectBlock0 = new int[(this.sum0 >>> 6) + 1];
+		int select1Idx = 1;
+		int select0Idx = 1;
+		for(int i=1; i<rankBlock.length; i++) {
+			int rank1 = rankBlock[i];
+			int rank0 = (i << 6) - rank1;
+			if(select1Idx << 6 < rank1) {
+				selectBlock1[select1Idx] = i;
+				select1Idx++;
+			}
+			if(select0Idx << 6 < rank0) {
+				selectBlock0[select0Idx] = i;
+				select0Idx++;				
+			}
+		}
 	}
 	
 	public final int size() {

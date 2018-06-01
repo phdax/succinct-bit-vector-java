@@ -37,6 +37,7 @@ public class BitVectorTest {
 		
 	@Test
 	public void rank1Test() {
+		rank1TestImpl(l(0b01000101), -1, "is", 0);
 		rank1TestImpl(l(0b01000101), 0, "is", 1);
 		rank1TestImpl(l(0b01000101), 1, "is", 1);
 		rank1TestImpl(l(0b01000101), 2, "is", 2);
@@ -62,6 +63,37 @@ public class BitVectorTest {
 	private void rank1TestImpl(long[] bits, int pos, String is, int exp) {
 		BitVector bv = new BitVector(bits.length*Long.SIZE, bits);
 		int act = bv.rank1(pos);
+		assertThat(act, is(exp));
+	}
+	
+	@Test
+	public void rank0Test() {
+		rank0TestImpl(l(0b01000101), -1, "is", 0);
+		rank0TestImpl(l(0b01000101), 0, "is", 0);
+		rank0TestImpl(l(0b01000101), 1, "is", 1);
+		rank0TestImpl(l(0b01000101), 2, "is", 1);
+		rank0TestImpl(l(0b01000101), 3, "is", 2);
+		rank0TestImpl(l(0b01000101), 4, "is", 3);
+		rank0TestImpl(l(0b01000101), 5, "is", 4);
+		rank0TestImpl(l(0b01000101), 6, "is", 4);
+		rank0TestImpl(l(0b01000101), 7, "is", 5);
+		rank0TestImpl(l(0b01000101), 64, "is", 61);
+		rank0TestImpl(l(0b01000101), 9999, "is", 61);
+		
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+0, "is", 62);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+1, "is", 62);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+2, "is", 63);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+3, "is", 63);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+4, "is", 63);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+5, "is", 63);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+6, "is", 64);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+7, "is", 64);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+64, "is", 120);
+		rank0TestImpl(l(0b01000101, 0b10111010), 64+9999, "is", 120);
+	}
+	private void rank0TestImpl(long[] bits, int pos, String is, int exp) {
+		BitVector bv = new BitVector(bits.length*Long.SIZE, bits);
+		int act = bv.rank0(pos);
 		assertThat(act, is(exp));
 	}
 	
