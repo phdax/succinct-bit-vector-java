@@ -123,6 +123,29 @@ public class BitVectorTest {
 	}
 	
 	@Test
+	public void select0Test() {
+		select0TestImpl(l(0b01000101), 0, "is", -1);
+		select0TestImpl(l(0b01000101), 1, "is", 1);
+		select0TestImpl(l(0b01000101), 2, "is", 3);
+		select0TestImpl(l(0b01000101), 3, "is", 4);
+		select0TestImpl(l(0b01000101), 4, "is", 5);
+		select0TestImpl(l(0b01000101), 5, "is", 7);
+		select0TestImpl(l(0b01000101), 61, "is", 63);
+		select0TestImpl(l(0b01000101), 62, "is", -1);
+		
+		select0TestImpl(l(0b01000101, 0b10111010), 62, "is", 64+0);
+		select0TestImpl(l(0b01000101, 0b10111010), 63, "is", 64+2);
+		select0TestImpl(l(0b01000101, 0b10111010), 64, "is", 64+6);
+		select0TestImpl(l(0b01000101, 0b10111010), 120, "is", 127);
+		select0TestImpl(l(0b01000101, 0b10111010), 121, "is", -1);
+	}
+	private void select0TestImpl(long[] bits, int rank, String is, int exp) {
+		BitVector bv = new BitVector(bits.length*Long.SIZE, bits);
+		int act = bv.select0(rank);
+		assertThat(act, is(exp));	
+	}
+	
+	@Test
 	public void bitPosTest() {
 		assertThat(BitVector.bitPos(0b0, 0), is(-1));
 		assertThat(BitVector.bitPos(0b0, 1), is(-1));

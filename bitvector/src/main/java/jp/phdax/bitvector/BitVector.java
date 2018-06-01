@@ -77,7 +77,7 @@ public class BitVector {
 		if(rank <= 0 || sum0 < rank) return -1;
 		int lowerLimit = selectBlock0[rank >>> 6];
 		int idx = linerSearch0(lowerLimit, rank);
-		return (idx << 6) + bitPos(~bits[idx], rank-(sum1-rankBlock[idx]));
+		return (idx << 6) + bitPos(~bits[idx], rank-((idx << 6) - rankBlock[idx]));
 	}
 	
 	private final int linerSearch1(int idx, int rank1) {
@@ -85,7 +85,7 @@ public class BitVector {
 		return idx-1;
 	}
 	private final int linerSearch0(int idx, int rank0) {
-		for(; size-rankBlock[idx]<rank0; idx++);
+		for(; (idx<<6)-rankBlock[idx]<rank0; idx++);
 		return idx-1;
 	}
 	
