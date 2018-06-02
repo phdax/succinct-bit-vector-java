@@ -13,14 +13,15 @@ public class BitVector {
 		this.size = Math.min(size, bits.length << 6);
 		this.bits = bits;
 		
-		rankBlock = new int[bits.length+1];
-		int sizeMlt64 = size >>> 6;
-		int sizeMod64 = size & 0b111111;
-		for(int i=0; i<sizeMlt64; i++) {
-			rankBlock[i+1] = rankBlock[i] + Long.bitCount(bits[i]);
+		int rankBlockSize = (size >>> 6) + 1;
+		if((size & 0b111111) > 0) rankBlockSize++;
+		rankBlock = new int[rankBlockSize];
+		int nextRange = Math.min(size, 64);
+		for(int i=0; nextRange>0 && i<rankBlockSize-1; i++) {
+			rankBlock[i+1] = rankBlock[i] + Long.bitCount(bits[i] << (64 - nextRange));
+			nextRange = Math.min(size - (64 << i), 64);
 		}
-		rankBlock[sizeMlt64] = rankBlock[sizeMlt64-1] +  + Long.bitCount(bits[sizeMlt64-1] << (64 - sizeMod64));
-		this.sum = rankBlock[bits.length];
+		this.sum = rankBlock[rankBlockSize-1];
 		
 		selectBlock1 = new int[(this.sum >>> 6) + 1];
 		selectBlock0 = new int[(size - this.sum >>> 6) + 1];
@@ -42,6 +43,10 @@ public class BitVector {
 	
 	public final int size() {
 		return size;
+	}
+	
+	public final int bitCount() {
+		return sum;
 	}
 	
 	public final boolean pos(int idx) {
