@@ -1,6 +1,10 @@
 apply plugin: 'eclipse'
 apply plugin: 'java-library'
 
+dependencies {
+  compile project(':bitvector')
+}
+
 /*
 task initSrcDirs {
   doLast {
