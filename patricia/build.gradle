@@ -1,0 +1,14 @@
+apply plugin: 'eclipse'
+apply plugin: 'java-library'
+
+/*
+task initSrcDirs {
+  doLast {
+    sourceSets.all {
+      java.srcDirs*.mkdirs()
+      resources.srcDirs*.mkdirs()
+    }
+  }
+}
+*/
+
