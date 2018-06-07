@@ -1,8 +1,18 @@
 apply plugin: 'eclipse'
 apply plugin: 'java-library'
 
+group = 'jp.phdax'
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
+repositories {
+  mavenCentral()
+}
+
 dependencies {
   compile project(':bitvector')
+  compile 'junit:junit:4.12'
 }
 
 /*
