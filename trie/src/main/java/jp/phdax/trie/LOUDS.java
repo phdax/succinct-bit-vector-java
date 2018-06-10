@@ -62,13 +62,14 @@ public class LOUDS {
 		int prevNode = 1;
 		int node = 1; // node == tree.rank1()
 		int cursor = 0;
-		while(cursor < chars.length) {
+		cursor:
+		while(cursor < target.length) {
 			int start = tree.select0(node)+1;
 			int end = tree.select0(node+1);
 			// current node's children
 			children:
 			for(int i=start; i<end; i++) {
-				int valStart = delim.select1(node)+1;
+				int valStart = delim.select1(node);
 				int valLen = delim.select1(node+1) - valStart;
 				// child's chars
 				if(cursor + valLen > target.length) continue children;
@@ -78,7 +79,7 @@ public class LOUDS {
 				prevNode = node;
 				node = tree.rank1(i); // next node
 				cursor += valLen;
-				break;
+				continue cursor;
 			}
 			return -1;
 		}

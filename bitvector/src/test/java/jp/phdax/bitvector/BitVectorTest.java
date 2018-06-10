@@ -252,15 +252,19 @@ public class BitVectorTest {
 		assertThat(BitVector.bitReverse(1L), is(Long.MIN_VALUE));
 		assertThat(BitVector.bitReverse(-1L), is(-1L));
 		assertThat(BitVector.bitReverse(0xF0F0F0F0F0F0F0F0L), is(0x0F0F0F0F0F0F0F0FL));
+		assertThat(BitVector.bitReverse(0x3333333333333333L), is(0xCCCCCCCCCCCCCCCCL));
+		assertThat(BitVector.bitReverse(0b1110110000L), is(0b00001101110000000000000000000000000000000000000000000000000000000000L));
 	}
 	
 	@Test
 	public void toStringTest() {
-		BitVector bv4 = b(4, 0b00000101);
+		BitVector bv4 = b(4, 0b00000101L);
 		assertThat(bv4.toString(), is("[1010]"));
-		BitVector bv8 = b(8, 0b01000101);
+		BitVector bv8 = b(8, 0b01000101L);
 		assertThat(bv8.toString(), is("[10100010]"));
-		BitVector bv12 = b(12, 0b101101000101);
+		BitVector bv12 = b(12, 0b101101000101L);
 		assertThat(bv12.toString(), is("[10100010,1101]"));
+		BitVector bv16 = b(16, 0b1110110000L);
+		assertThat(bv16.toString(), is("[00001101,11000000]"));	
 	}
 }

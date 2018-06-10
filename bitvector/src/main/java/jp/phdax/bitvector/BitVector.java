@@ -91,6 +91,7 @@ public class BitVector {
 		for(; rankBlock[idx]<rank1; idx++);
 		return idx-1;
 	}
+	
 	private final int linerSearch0(int idx, int rank0) {
 		for(; (idx<<6)-rankBlock[idx]<rank0; idx++);
 		return idx-1;
@@ -101,6 +102,7 @@ public class BitVector {
 		for(; n>1; bits&=(bits-1), n--);
 		return Long.bitCount(bits ^ (bits-1))-1;
 	}
+	
 	public static final long bitReverse(long bits) {
 	    bits = (bits & 0x00000000FFFFFFFFL) << 32 | (bits & 0xFFFFFFFF00000000L) >>> 32;
 	    bits = (bits & 0x0000FFFF0000FFFFL) << 16 | (bits & 0xFFFF0000FFFF0000L) >>> 16;
@@ -115,25 +117,24 @@ public class BitVector {
 	public String toString() {
 		if(size == 0) return "[]";
 		StringBuilder b = new StringBuilder();
-		int maxIdx = (size-1) >>> 6;
-		int digitHex = ((size-1) & 0b111111) >>> 3;
-		int modHex = ((size-1) & 0b111);
-		for(int i=0; i<=maxIdx; i++) {
+		for(int i=0; i<bits.length; i++) {
+			long v = bits[i];
 			b.append('[');
-			String str = Long.toBinaryString(bitReverse(bits[i]));
-			int jmax = i<maxIdx ? 8 : digitHex;
-			for(int j=0; j<jmax; j++) {
-				int start = j<<3;
-				b.append(str.substring(start, start+8));
-				b.append(',');
-			}
-			if(i == maxIdx) {
-				int start = digitHex<<3;
-				b.append(str.substring(start, start+modHex+1));
+			for(int j=0; j<64; j++) {
+				if((i<<6)+j >= size) {
+					b.append(']');
+					return b.toString();
+				}
+				if(j%8==0 && j>0) b.append(',');
+				if((v >>> j & 1) == 1) {
+					b.append('1');
+				} else {
+					b.append('0');					
+				}
 			}
 			b.append(']');
-			if(i < maxIdx) b.append(System.lineSeparator());
-		}		
+			b.append(System.lineSeparator());
+		}
 		return b.toString();
 	}
 }
