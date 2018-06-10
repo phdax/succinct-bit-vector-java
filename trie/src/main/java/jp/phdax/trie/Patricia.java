@@ -1,40 +1,43 @@
 package jp.phdax.trie;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Patricia {
 	
-	private int size;
+	private int dictSize = 0;
+	private int trieSize = 0;
 	private List<Node> nodes;
-	private final Node root;
+	private final Node root = new RootNode();
 	private static final int NONE_ID = -1;
-	private static final int ROOT_ID = -2;
 	
 	public Patricia() {
-		this.size = 0;
 		this.nodes = new ArrayList<>();
-		this.root = new RootNode();
 	}
 	
 	public Patricia(int initSize) {
 		this.nodes = new ArrayList<>(initSize);
-		this.root = new RootNode();
 	}
 	
 	public void put(String str) {
 		char[] chars = str.toCharArray();
-		Node node = root.put(size, chars, chars.length);
+		Node node = root.put(dictSize, chars, chars.length);
 		if(node != null) {
 			nodes.add(node);
-			size++;
+			dictSize++;
 		}
 	}
 	
 	public int size() {
-		return size;
+		return dictSize;
+	}
+	
+	public int trieSize() {
+		return trieSize;
 	}
 	
 	public int getId(String str) {
@@ -45,6 +48,10 @@ public class Patricia {
 		Node node = nodes.get(id);
 		char[] chars = node.get();
 		return String.valueOf(chars);
+	}
+	
+	public IBreadthFirstIterator<char[]> bfIterator() {
+		return new PatriciaBreadthFirstIterator(root);
 	}
 	
 	private static final int matchLen(char[] obj1, char[] obj2) {
@@ -69,7 +76,7 @@ public class Patricia {
 	
 	private class RootNode extends Node {
 		public RootNode() {
-			super(null, ROOT_ID, new char[0], 0);
+			super(null, NONE_ID, new char[0], 0);
 		}
 		@Override
 		public Node put(int newId, char[] chars, int size) {
@@ -81,6 +88,7 @@ public class Patricia {
 			}
 			Node newChild = new Node(this, newId, chars, size);
 			children.add(newChild);
+			trieSize += size;
 			return newChild;
 		}
 		@Override
@@ -134,6 +142,7 @@ public class Patricia {
 					}
 					Node newChild = new Node(this, newId, diff, size);
 					children.add(newChild);
+					trieSize += diff.length;
 					return newChild;
 				}
 			}
@@ -157,7 +166,7 @@ public class Patricia {
 					children.add(inherit);
 					return this;
 				}
-				// [2-a] val:"abcdef" <-> chars:"abcDEF"
+				// [2-b] val:"abcdef" <-> chars:"abcDEF"
 				else {
 					// change to inner node
 					this.val = Arrays.copyOf(val, matchLen);
@@ -168,6 +177,7 @@ public class Patricia {
 					char[] diffChars = Arrays.copyOfRange(chars, matchLen, chars.length);
 					Node newChild = new Node(this, newId, diffChars, size);
 					children.add(newChild);
+					trieSize += diffChars.length;
 					return newChild;
 				}
 			}
@@ -202,6 +212,62 @@ public class Patricia {
 				return buf;
 			}
 			return parent.getImpl(buf, cursor);
+		}
+		
+		@Override
+		public String toString() {
+			return Arrays.toString(val);
+		}
+	}
+	
+	private class PatriciaBreadthFirstIterator implements IBreadthFirstIterator<char[]> {
+		
+		private final Deque<Node> deq = new ArrayDeque<>();
+		private boolean isLeaf = false;
+		private boolean isDelim = false;
+		private final Node dummy = new DummyNode();
+		
+		public PatriciaBreadthFirstIterator(Node node) {
+			deq.offer(node);
+			deq.offer(dummy);
+		}
+		
+		@Override
+		public boolean hasNext() {
+			return !deq.isEmpty();
+		}
+		 
+		@Override
+		public char[] next() {
+			Node node = deq.poll();
+			if(node instanceof DummyNode) {
+				isDelim = true;
+				isLeaf = false;
+			} else {
+				for(Node child : node.children) {
+					deq.offer(child);
+				}
+				deq.offer(dummy);
+				isDelim = false;
+				isLeaf = node.id != NONE_ID;
+			}
+			return node.val;
+		}
+		
+		@Override
+		public boolean isDelim() {
+			return isDelim;
+		}
+		
+		@Override
+		public boolean isLeaf() {
+			return isLeaf;
+		}
+		
+		private class DummyNode extends Node {
+			public DummyNode() {
+				super(null, NONE_ID, new char[0], 0);
+			}
 		}
 	}
 }

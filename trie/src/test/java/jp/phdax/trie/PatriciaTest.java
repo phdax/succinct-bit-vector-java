@@ -49,4 +49,36 @@ public class PatriciaTest {
 		assertThat(pat.get(3), is("aaa3"));
 		assertThat(pat.get(4), is("aab"));
 	}
+	
+	@Test
+	public void iteratorTest() {
+		Patricia pat = new Patricia();
+		pat.put("aaa");
+		pat.put("aaa1");
+		pat.put("aaa2");
+		pat.put("aaa3");
+		pat.put("aab");
+		pat.put("aab");
+		IBreadthFirstIterator<char[]> itr = pat.bfIterator();
+		assertThat(itr.next(), is(c(""))); // root
+		assertThat(itr.next(), is(c("")));
+		assertThat(itr.next(), is(c("aa")));
+		assertThat(itr.next(), is(c("")));
+		assertThat(itr.next(), is(c("a")));
+		assertThat(itr.next(), is(c("b")));
+		assertThat(itr.next(), is(c("")));
+		assertThat(itr.next(), is(c("1")));
+		assertThat(itr.next(), is(c("2")));
+		assertThat(itr.next(), is(c("3")));
+		assertThat(itr.next(), is(c("")));
+		assertThat(itr.next(), is(c(""))); // b
+		assertThat(itr.next(), is(c(""))); // 1
+		assertThat(itr.next(), is(c(""))); // 2
+		assertThat(itr.next(), is(c(""))); // 3
+		assertThat(itr.hasNext(), is(false));
+	}
+	
+	private static final char[] c(String str) {
+		return str.toCharArray();
+	}
 }
