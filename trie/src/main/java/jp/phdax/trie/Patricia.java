@@ -11,6 +11,7 @@ public class Patricia {
 	
 	private int dictSize = 0;
 	private int trieSize = 0;
+	private int maxLen = 0;
 	private List<Node> nodes;
 	private final Node root = new RootNode();
 	private static final int NONE_ID = -1;
@@ -25,6 +26,7 @@ public class Patricia {
 	
 	public void put(String str) {
 		char[] chars = str.toCharArray();
+		maxLen = Math.max(maxLen, chars.length);
 		Node node = root.put(dictSize, chars, chars.length);
 		if(node != null) {
 			nodes.add(node);
@@ -38,6 +40,10 @@ public class Patricia {
 	
 	public int trieSize() {
 		return trieSize;
+	}
+	
+	public int maxLen() {
+		return maxLen;
 	}
 	
 	public int getId(String str) {

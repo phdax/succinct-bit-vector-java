@@ -24,16 +24,16 @@ public class LOUDSBuilder {
 	}
 	
 	public LOUDS build() {
-		return type.create(pat.size(), pat.trieSize(), pat.bfIterator());
+		return type.create(pat.size(), pat.trieSize(), pat.maxLen(), pat.bfIterator());
 	}
 	
 	public enum Type {
 		DEFAULT {
 			@Override
-			public LOUDS create(int dictSize, int trieSize, IBreadthFirstIterator<char[]> itr) {
-				return new LOUDS(dictSize, trieSize, itr);
+			public LOUDS create(int dictSize, int trieSize, int maxLen, IBreadthFirstIterator<char[]> itr) {
+				return new LOUDS(dictSize, trieSize, maxLen, itr);
 			}
 		};
-		abstract public LOUDS create(int dictSize, int trieSize, IBreadthFirstIterator<char[]> itr);
+		abstract public LOUDS create(int dictSize, int trieSize, int maxLen, IBreadthFirstIterator<char[]> itr);
 	}
 }
