@@ -4,10 +4,10 @@ import java.util.Arrays;
 
 public class BitVectorBuilder {
 	
-	private final int size;
-	private final long[] bits;
+	private int size;
+	private long[] bits;
 	private Type type;
-		
+	
 	private BitVectorBuilder(int size, long[] bits) {
 		this.bits = bits;
 		this.type = Type.DEFAULT;
@@ -34,14 +34,26 @@ public class BitVectorBuilder {
 		return b;
 	}
 	
+	public static BitVectorBuilder create() {
+		BitVectorBuilder b = new BitVectorBuilder(0, new long[0]);
+		return b;
+	}
+	
 	public BitVectorBuilder type(Type type) {
 		this.type = type;
 		return this;
 	}
 	
+	public BitVectorBuilder size(int size) {
+		this.size = size;
+		return this;
+	}
+	
 	public BitVectorBuilder set(int idx) {
-		if(idx >= size) {
-			throw new IllegalArgumentException("Exceeded index range.");
+		if((idx >>> 6) >= bits.length) {
+			long[] tmp = bits;
+			int bitsLen = ((idx >>> 6) + 1) << 1;
+			bits = Arrays.copyOf(tmp, bitsLen);
 		}
 		bits[idx >>> 6] |= 1L << (idx & 0b111111);
 		return this;

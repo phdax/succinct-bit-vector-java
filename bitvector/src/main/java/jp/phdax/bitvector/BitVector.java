@@ -101,4 +101,39 @@ public class BitVector {
 		for(; n>1; bits&=(bits-1), n--);
 		return Long.bitCount(bits ^ (bits-1))-1;
 	}
+	public static final long bitReverse(long bits) {
+	    bits = (bits & 0x00000000FFFFFFFFL) << 32 | (bits & 0xFFFFFFFF00000000L) >>> 32;
+	    bits = (bits & 0x0000FFFF0000FFFFL) << 16 | (bits & 0xFFFF0000FFFF0000L) >>> 16;
+	    bits = (bits & 0x00FF00FF00FF00FFL) << 8 | (bits & 0xFF00FF00FF00FF00L) >>> 8;
+	    bits = (bits & 0x0F0F0F0F0F0F0F0FL) << 4 | (bits & 0xF0F0F0F0F0F0F0F0L) >>> 4;
+	    bits = (bits & 0x3333333333333333L) << 2 | (bits & 0xCCCCCCCCCCCCCCCCL) >>> 2;
+	    bits = (bits & 0x5555555555555555L) << 1 | (bits & 0xAAAAAAAAAAAAAAAAL) >>> 1;
+	    return bits;
+	}
+	
+	@Override
+	public String toString() {
+		if(size == 0) return "[]";
+		StringBuilder b = new StringBuilder();
+		int maxIdx = (size-1) >>> 6;
+		int digitHex = ((size-1) & 0b111111) >>> 3;
+		int modHex = ((size-1) & 0b111);
+		for(int i=0; i<=maxIdx; i++) {
+			b.append('[');
+			String str = Long.toBinaryString(bitReverse(bits[i]));
+			int jmax = i<maxIdx ? 8 : digitHex;
+			for(int j=0; j<jmax; j++) {
+				int start = j<<3;
+				b.append(str.substring(start, start+8));
+				b.append(',');
+			}
+			if(i == maxIdx) {
+				int start = digitHex<<3;
+				b.append(str.substring(start, start+modHex+1));
+			}
+			b.append(']');
+			if(i < maxIdx) b.append(System.lineSeparator());
+		}		
+		return b.toString();
+	}
 }

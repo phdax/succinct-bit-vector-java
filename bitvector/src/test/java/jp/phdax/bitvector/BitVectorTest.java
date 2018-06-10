@@ -246,4 +246,21 @@ public class BitVectorTest {
 		assertThat(BitVector.bitPos(0b1111111111111111111111111111111111111111111111111111111111111111L, 64), is(63));
 		assertThat(BitVector.bitPos(0b1111111111111111111111111111111111111111111111111111111111111111L, 65), is(-1));	
 	}
+	
+	@Test
+	public void reverseTest() {
+		assertThat(BitVector.bitReverse(1L), is(Long.MIN_VALUE));
+		assertThat(BitVector.bitReverse(-1L), is(-1L));
+		assertThat(BitVector.bitReverse(0xF0F0F0F0F0F0F0F0L), is(0x0F0F0F0F0F0F0F0FL));
+	}
+	
+	@Test
+	public void toStringTest() {
+		BitVector bv4 = b(4, 0b00000101);
+		assertThat(bv4.toString(), is("[1010]"));
+		BitVector bv8 = b(8, 0b01000101);
+		assertThat(bv8.toString(), is("[10100010]"));
+		BitVector bv12 = b(12, 0b101101000101);
+		assertThat(bv12.toString(), is("[10100010,1101]"));
+	}
 }
