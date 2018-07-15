@@ -73,38 +73,63 @@ public class SuccinctBitVectorTest {
 	public void select1Test() {
 		SuccinctBitVector bv8 = b(8, 0b01000101);
 		assertThat(bv8.select1(0), is(0));
-		assertThat(bv8.select1(1), is(0));
-		assertThat(bv8.select1(2), is(2));
-		assertThat(bv8.select1(3), is(6));
+		assertThat(bv8.select1(1), is(1));
+		assertThat(bv8.select1(2), is(3));
+		assertThat(bv8.select1(3), is(7));
 		assertThat(bv8.select1(4), is(-1));
 		
 		SuccinctBitVector bv64 = b(64, 0b01000101);
 		assertThat(bv64.select1(0), is(0));
-		assertThat(bv64.select1(1), is(0));
-		assertThat(bv64.select1(2), is(2));
-		assertThat(bv64.select1(3), is(6));
+		assertThat(bv64.select1(1), is(1));
+		assertThat(bv64.select1(2), is(3));
+		assertThat(bv64.select1(3), is(7));
 		assertThat(bv64.select1(4), is(-1));
+		
+		SuccinctBitVector bv72 = b(128, 0b01000101, 0b10111010);
+		assertThat(bv72.select1(0), is(0));
+		assertThat(bv72.select1(1), is(1));
+		assertThat(bv72.select1(2), is(3));
+		assertThat(bv72.select1(3), is(7));
+		assertThat(bv72.select1(4), is(64+2));
+		assertThat(bv72.select1(5), is(64+4));
+		assertThat(bv72.select1(6), is(64+5));
+		assertThat(bv72.select1(7), is(64+6));
+		assertThat(bv72.select1(8), is(64+8));
+		assertThat(bv72.select1(9), is(-1));
 	}
 	
 	@Test
 	public void select0Test() {
 		SuccinctBitVector bv8 = b(8, 0b01000101);
 		assertThat(bv8.select0(0), is(0));
-		assertThat(bv8.select0(1), is(1));
-		assertThat(bv8.select0(2), is(3));
-		assertThat(bv8.select0(3), is(4));
-		assertThat(bv8.select0(4), is(5));
-		assertThat(bv8.select0(5), is(7));
+		assertThat(bv8.select0(1), is(2));
+		assertThat(bv8.select0(2), is(4));
+		assertThat(bv8.select0(3), is(5));
+		assertThat(bv8.select0(4), is(6));
+		assertThat(bv8.select0(5), is(8));
 		assertThat(bv8.select0(6), is(-1));
 		
 		SuccinctBitVector bv64 = b(64, 0b01000101);
 		assertThat(bv64.select0(0), is(0));
-		assertThat(bv64.select0(1), is(1));
-		assertThat(bv64.select0(2), is(3));
-		assertThat(bv64.select0(3), is(4));
-		assertThat(bv64.select0(4), is(5));
-		assertThat(bv64.select0(5), is(7));
-		assertThat(bv64.select0(61), is(63));
+		assertThat(bv64.select0(1), is(2));
+		assertThat(bv64.select0(2), is(4));
+		assertThat(bv64.select0(3), is(5));
+		assertThat(bv64.select0(4), is(6));
+		assertThat(bv64.select0(5), is(8));
+		assertThat(bv64.select0(61), is(64));
 		assertThat(bv64.select0(62), is(-1));
+	}
+	
+	@Test
+	public void t() {
+		assertThat(SuccinctBitVector.ceilToPowerOf(2, 3), is(3));
+		assertThat(SuccinctBitVector.ceilToPowerOf(3, 3), is(3));
+		assertThat(SuccinctBitVector.ceilToPowerOf(4, 3), is(9));
+		assertThat(SuccinctBitVector.ceilToPowerOf(8, 3), is(9));
+		assertThat(SuccinctBitVector.ceilToPowerOf(9, 3), is(9));
+		assertThat(SuccinctBitVector.ceilToPowerOf(10, 3), is(27));
+		assertThat(SuccinctBitVector.ceilToPowerOf(26, 3), is(27));
+		assertThat(SuccinctBitVector.ceilToPowerOf(27, 3), is(27));
+		assertThat(SuccinctBitVector.ceilToPowerOf(28, 3), is(81));
 	}
 }

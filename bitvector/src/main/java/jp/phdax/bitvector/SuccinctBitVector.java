@@ -8,7 +8,7 @@ package jp.phdax.bitvector;
  * 実装の都合上変更している箇所があります。<br>
  * <br>
  * また、可読性を重視するため乗算剰余算はビット演算に置換していません。<br>
- * TODO 速度重視用に、疎密固定・ビット演算徹底・JNAを通してselectをpdep命令とtzcnt命令で実装したクラスを用意<br>
+ * TODO 速度重視用に、疎密固定・ビット演算化・JNAを通してselectをpdep命令とtzcnt命令で実装したクラスを用意<br>
  * @see 定兼 邦彦 (2018), "簡潔データ構造", 共立出版, https://www.amazon.co.jp/dp/4320121740
  * @author phdax
  */
@@ -123,7 +123,9 @@ public class SuccinctBitVector {
 	}
 	
 	private class SparseSelectBlock implements ISelectBlock {
+		
 		private final int[] pos;
+		
 		public SparseSelectBlock(long[] data, int sum, boolean reverse) {
 			this.pos = new int[sum];
 			int idx = 0;
@@ -135,6 +137,7 @@ public class SuccinctBitVector {
 				}
 			}
 		}
+		
 		@Override
 		public int select(int rank) {
 			//rankの値域が0以上のため、逆関数であるselectは引数0を正常系として扱うべき
@@ -145,21 +148,37 @@ public class SuccinctBitVector {
 	}
 	
 	private class DenseSelectBlock implements ISelectBlock {
-		private final int[] largeBlock; // ビットの位置ではなく、smallBlockの開始インデックスを記録
-		private final byte[] smallBlock;
-		public DenseSelectBlock(long[] data, int sum, boolean reverse) {		
-			int largeBlockBits = Math.max(square(log2(size)), WORD_SIZE);
+		
+		private final int largeBlockBits;
+		private final int[] largeBlock2smallBlock; // ビットの位置ではなく、smallBlockの開始インデックスを記録
+		private final int[] largeBlock;
+		private final int[] smallBlock;
+		private final int way;
+		private final boolean reverse;
+		
+		public DenseSelectBlock(long[] data, int sum, boolean reverse) {
+			
+			this.reverse = reverse;
+			
+			largeBlockBits = Math.max(square(log2(size)), WORD_SIZE);
 			int largeBlockLen = sum / largeBlockBits;
 			if(sum % largeBlockBits > 0) largeBlockLen++;
+			largeBlock2smallBlock = new int[largeBlockLen];
 			largeBlock = new int[largeBlockLen];
-			
+						
+			//各大ブロックに紐づく木構造のノード分を加味する。
+			//リサイズや２度のループが手間なため、最悪ケースで確保（＝大ブロックが偏り、ほぼ全体で大きな１つの木になる場合）
+			//それでもサイズはリーフ長の定数倍にとどまる（初期値がリーフ長、公比がsqrt(log2(size))の公比級数に等しい）
 			int smallBlockBits = WORD_SIZE;
 			int smallBlockLen = size / smallBlockBits;
 			if(size % smallBlockBits > 0) smallBlockLen++;
-			smallBlock = new byte[smallBlockLen];
+			way = Math.max(2, sqrt(log2(size))); //sqrt(log2(size))分木
+			int smallBlockTreeLen = geometricSeries(smallBlockLen, way);
+			smallBlock = new int[smallBlockTreeLen];
 			
-			largeBlock[0] = 0;
+			largeBlock2smallBlock[0] = 0;
 			int largeBlockIdx = 1;
+			int smallBlockIdx = 0;
 			int rank = 0;
 			for(int i=0; i<data.length; i++) {
 				long d = data[i];
@@ -170,17 +189,97 @@ public class SuccinctBitVector {
 				}
 				int popcnt = Long.bitCount(d);
 				rank += popcnt;
-				smallBlock[i] = (byte)popcnt;
+				smallBlock[smallBlockIdx++] = (byte)popcnt;
 				if(rank > largeBlockBits) {
-					int diff = rank - largeBlockBits;
-					largeBlock[largeBlockIdx++] = i;
-					rank = diff;
+					int overrun = rank - largeBlockBits;
+					//木構造の分をsmallBlockに追加していく
+					largeBlock[largeBlockIdx] = i;
+					largeBlock2smallBlock[largeBlockIdx] = smallBlockIdx;
+					smallBlockIdx = accumrateAndStack(smallBlock, largeBlock2smallBlock[largeBlockIdx-1], largeBlock2smallBlock[largeBlockIdx], way);
+					largeBlockIdx++;
+					rank = overrun;
 				}
 			}	
 		}
+		
+		/**
+		 * 指定した範囲（{@code start <= idx < end}）の配列値を{@code way}で分割し、<br>
+		 * それぞれの範囲の合計値を先頭順に配列の末尾へセット...を繰り返します。<br>
+		 * 最後にセットした配列のインデックス+1を返します。
+		 * <pre>
+		 * (例)<br>
+		 * input:<br>
+		 * smallBlock=[0,1,2,3,0,1,0,2], start=0, end=8, way=3<br>
+		 * process:<br>
+		 * [0,1,2,3,0,1,0,2] -> [0,1,2,3,0,1,0,2,0] (fill zero)
+		 * [0,1,2,3,0,1,0,2,0] -> [0,1,2,3,0,1,0,2,0,3,4,2] (accumrateAndStackImpl)
+		 * [0,1,2,3,0,1,0,2,0,3,4,2] -> [0,1,2,3,0,1,0,2,0,3,4,2,9] (accumrateAndStackImpl)<br>
+		 * output:<br>
+		 * 13 (smallBlock cursor)<br>
+		 * </pre>
+		 */
+		private int accumrateAndStack(int[] smallBlock, int start, int end, int way) {
+			//きれいなn-way treeにするため、
+			//指定範囲をwayのべき数にceilして増えた分はゼロ詰（インデックスずらすだけ。nop）
+			int range = end - start;
+			int ceiledRange = ceilToPowerOf(range, way);
+			return accumrateAndStackImpl(smallBlock, start, start+ceiledRange, way);
+		}
+		private int accumrateAndStackImpl(int[] smallBlock, int start, int end, int way) {
+			int cursor = end;
+			if(end - start == 1) {
+				return cursor;
+			}
+			for(int i=start; i<end; i+=way) {
+				smallBlock[cursor++] = smallBlock[i] + smallBlock[i+1] + smallBlock[i+2];
+			}
+			return accumrateAndStackImpl(smallBlock, end, cursor, way);
+		}
+		
 		@Override
-		public int select(int rank) {
-			return 0;
+		public int select(int rank) {			
+			if(rank < 0 || (reverse ? size-sum : sum) < rank) return -1;
+			if(rank == 0) return 0;
+
+			int largeBlockIdx = rank/largeBlockBits;
+			int mod = rank%largeBlockBits;
+			
+			int smallBlockEnd = largeBlock2smallBlock[largeBlockIdx];
+			int smallBlockStart = largeBlockIdx > 0 ? largeBlock2smallBlock[largeBlockIdx-1]+1 : 0;
+			
+			int smallBlockSum = 0;
+			int depth = 0;
+			int cursor = smallBlockEnd;
+			roop:
+			while(true) {
+				for(int i=0; i<way; i++) {
+					int b = smallBlock[cursor+i];
+					if(mod <= b + smallBlockSum) {
+						depth++;
+						int nextCursor = cursor - (int)Math.pow(way, depth) + i*(int)Math.pow(way, depth-1);
+						if(nextCursor < smallBlockStart) {
+							cursor += i;
+							break roop;
+						} else {
+							cursor = nextCursor;
+							continue roop;							
+						}
+					}
+					smallBlockSum += b;
+				}
+				smallBlockSum = 0;
+				break;
+			}
+			
+			int remainRank = mod - smallBlockSum;			
+			int dataIdx = largeBlock[largeBlockIdx];
+			dataIdx += cursor - smallBlockStart;
+			long d = data[dataIdx];
+			if(reverse) {
+				d = ~d;
+			}
+			int bitPos = bitPos(d, remainRank);
+			return dataIdx * 64 + bitPos;
 		}
 	}
 	
@@ -189,5 +288,23 @@ public class SuccinctBitVector {
 	}
 	private static final int square(int n) {
 		return n*n;
+	}
+	private static final int sqrt(int n) {
+		return (int)Math.sqrt(n);
+	}
+	public static final int ceilToPowerOf(int n, int base) {
+		double exponent = Math.ceil(Math.log(n) / Math.log(base));
+		return (int)Math.pow(base, exponent);
+	}
+	/**
+	 * 初期値{@code a}、公比{@code x}の公比級数を求める
+	 */
+	private static final int geometricSeries(int a, int x) {
+		return a * x / (x-1);
+	}
+	public static final int bitPos(long bits, int n) {
+		if(n <= 0 || Long.bitCount(bits) < n) return -1;
+		for(; n>1; bits&=(bits-1), n--);
+		return Long.bitCount(bits ^ (bits-1));
 	}
 }
