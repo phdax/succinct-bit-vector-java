@@ -5,7 +5,6 @@ import java.util.List;
 
 public class DenseSelectBlock implements ISelectBlock {
 	
-	private final int size;
 	private final int sum;
 	private final int blockSize;
 	private final int[][] trees;
@@ -16,7 +15,6 @@ public class DenseSelectBlock implements ISelectBlock {
 	
 	public DenseSelectBlock(long[] data, int sum, int size, boolean reverse) {
 		
-		this.size = size;
 		this.sum = sum;
 		this.reverse = reverse;
 		this.blockSize = Math.max(square(log2(size)), BLOCK_SIZE_MIN);
@@ -39,12 +37,11 @@ public class DenseSelectBlock implements ISelectBlock {
 			if(reverse) bits = reverse(bits, i, size);
 			int smallBlock = Long.bitCount(bits);
 			smallBlocks.add(smallBlock);
-			cnt += smallBlock;
-			if(cnt > blockSize || i == data.length-1) {
-				roughPositions[blockIdx] = prevPos * Long.SIZE; // small block start
+			if(cnt + smallBlock > blockSize || i == data.length-1) {			
+				roughPositions[blockIdx] = prevPos;
 				trees[blockIdx] = accumrateAndStack(smallBlocks, branch);
-				cnt = smallBlock - blockSize;
-				prevPos = i;
+				prevPos = i * Long.SIZE + miniSelect(bits, smallBlock);
+				cnt = cnt + smallBlock - blockSize;
 				blockIdx++;
 			}
 		}
@@ -55,6 +52,14 @@ public class DenseSelectBlock implements ISelectBlock {
 		int nextRange = Math.min(sum - idx * 64, 64);
 		if(nextRange < 64) rtn &= (-1 >>> (64 - nextRange));
 		return rtn;
+	}
+	
+	public int[][] getTrees() {
+		return this.trees;
+	}
+	
+	public int[] getRoughPositions() {
+		return this.roughPositions;
 	}
 	
 	/**
@@ -98,23 +103,25 @@ public class DenseSelectBlock implements ISelectBlock {
 	
 	@Override
 	public int select(long[] data, int rank) {			
-		if(rank < 0 || (reverse ? size-sum : sum) < rank) return -1;
+		if(rank < 0 || sum < rank) return -1;
 		if(rank == 0) return 0;
 
 		int blockIdx = (rank-1) / blockSize;
 		int overrun = rank % blockSize;
+		if(rank % blockSize == 0) overrun = blockSize;
 		
 		int pos = roughPositions[blockIdx];
 		if(overrun == 0) return pos;
-		pos += searchRemains(data, pos, branch, trees[blockIdx], overrun);
+		pos += searchRemains(data, pos, branch, trees[blockIdx], overrun, reverse);
 		return pos;
 	}
 	
-	public static int searchRemains(long[] data, int roughPosition, int branch, int[] tree, int remains) {
+	public static int searchRemains(long[] data, int roughPosition, int branch, int[] tree, int remains, boolean reverse) {
 		long result = searchTree(tree, branch, remains);
 		int cursor = (int)(result & 0xFFFFFFFFL);
 		remains = (int)(result >>> 32);
 		long beInHere = data[roughPosition / Long.SIZE + cursor];
+		if(reverse) beInHere = ~beInHere; //reverseメソッドのように、sizeをはみ出る部分の考慮は不要（select冒頭のifで排除済み）
 		int miniPos = miniSelect(beInHere, remains);
 		return cursor * Long.SIZE + miniPos;
 	}
