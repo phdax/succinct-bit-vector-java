@@ -25,7 +25,7 @@ public class DenseSelectBlock implements ISelectBlock {
 		// if(2*blockSize+1 <= sum <= 3*blockSize) then blockLen = 3
 		// ...
 		int blockLen = (sum-1) / blockSize + 1;
-		this.trees = new int[blockLen][];	
+		this.trees = new int[blockLen][];
 		this.roughPositions = new int[blockLen];
 
 		int cnt = 0;
@@ -35,13 +35,26 @@ public class DenseSelectBlock implements ISelectBlock {
 		for(int i=0; i<data.length; i++) {
 			long bits = data[i];
 			if(reverse) bits = reverse(bits, i, size);
-			int smallBlock = Long.bitCount(bits);
-			smallBlocks.add(smallBlock);
-			if(cnt + smallBlock > blockSize || i == data.length-1) {			
+			int bitCount = Long.bitCount(bits);
+			if(cnt + bitCount > blockSize) {
+				int overrun = cnt + bitCount - blockSize;	
+				smallBlocks.add(blockSize - cnt);
 				roughPositions[blockIdx] = prevPos;
 				trees[blockIdx] = accumrateAndStack(smallBlocks, branch);
-				prevPos = i * Long.SIZE + miniSelect(bits, smallBlock);
-				cnt = cnt + smallBlock - blockSize;
+				blockIdx++;
+				
+				prevPos = i * Long.SIZE + miniSelect(bits, blockSize-cnt) + 1;
+				cnt = overrun;
+				smallBlocks.clear();
+				smallBlocks.add(overrun);
+			} else {
+				cnt += bitCount;
+				smallBlocks.add(bitCount);
+			}
+			
+			if(i == data.length-1) {
+				roughPositions[blockIdx] = prevPos;
+				trees[blockIdx] = accumrateAndStack(smallBlocks, branch);			
 				blockIdx++;
 			}
 		}
@@ -110,9 +123,10 @@ public class DenseSelectBlock implements ISelectBlock {
 		int overrun = rank % blockSize;
 		if(rank % blockSize == 0) overrun = blockSize;
 		
-		int pos = roughPositions[blockIdx];
-		if(overrun == 0) return pos;
-		pos += searchRemains(data, pos, branch, trees[blockIdx], overrun, reverse);
+		int roughPos = roughPositions[blockIdx];
+		if(overrun == 0) return roughPos;
+		int pos = roughPos / Long.SIZE * Long.SIZE;
+		pos += searchRemains(data, roughPos, branch, trees[blockIdx], overrun, reverse);
 		return pos;
 	}
 	
@@ -121,7 +135,11 @@ public class DenseSelectBlock implements ISelectBlock {
 		int cursor = (int)(result & 0xFFFFFFFFL);
 		remains = (int)(result >>> 32);
 		long beInHere = data[roughPosition / Long.SIZE + cursor];
-		if(reverse) beInHere = ~beInHere; //reverseメソッドのように、sizeをはみ出る部分の考慮は不要（select冒頭のifで排除済み）
+		//reverseメソッドのように、sizeをはみ出る部分の考慮は不要（select冒頭のifで排除済み）
+		if(reverse) beInHere = ~beInHere; 
+		int offset = roughPosition % 64;
+		beInHere &= (-1 << offset);
+
 		int miniPos = miniSelect(beInHere, remains);
 		return cursor * Long.SIZE + miniPos;
 	}

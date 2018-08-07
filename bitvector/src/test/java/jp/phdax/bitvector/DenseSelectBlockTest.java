@@ -22,7 +22,7 @@ public class DenseSelectBlockTest {
 		assertThat(d(64, 72, true, 0b01000101, 0b10111010).getTrees(), is(ll(l(61,3,64))));
 		
 		assertThat(d(8, 128, false, 0b01000101, 0b10111010).getTrees(), is(ll(l(3,5,8))));
-		assertThat(d(120, 128, true, 0b01000101, 0b10111010).getTrees(), is(ll(l(61,59,120))));
+		assertThat(d(120, 128, true, 0b01000101, 0b10111010).getTrees(), is(ll(l(61,3,64),l(56,0,56))));
 	}
 	
 	@Test
@@ -34,7 +34,7 @@ public class DenseSelectBlockTest {
 		assertThat(d(64, 72, true, 0b01000101, 0b10111010).getRoughPositions(), is(l(0)));
 		
 		assertThat(d(8, 128, false, 0b01000101, 0b10111010).getRoughPositions(), is(l(0)));
-		assertThat(d(120, 128, true, 0b01000101, 0b10111010).getRoughPositions(), is(l(0,68)));
+		assertThat(d(120, 128, true, 0b01000101, 0b10111010).getRoughPositions(), is(l(0,72)));
 	}
 	
 	private static final int[] l(int... v) {

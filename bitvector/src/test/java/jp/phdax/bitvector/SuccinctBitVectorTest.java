@@ -141,7 +141,7 @@ public class SuccinctBitVectorTest {
 		assertThat(bv128.select0(62), is(64+1));
 		assertThat(bv128.select0(63), is(64+3));
 		assertThat(bv128.select0(64), is(64+7));
-		assertThat(bv128.select0(65), is(64+8));
+		assertThat(bv128.select0(65), is(64+9));
 		assertThat(bv128.select0(119), is(127));
 		assertThat(bv128.select0(120), is(128));
 		assertThat(bv128.select0(121), is(-1));
