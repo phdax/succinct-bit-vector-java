@@ -69,12 +69,12 @@ public class SuccinctBitVector {
 		int smallBlockIdx = 0;
 		byte smallSum = 0;
 		for(int i=0; i<data.length; i++) {
-			if(i * Long.SIZE % smallBlockBits == 0) {
-				smallBlock[smallBlockIdx++] = smallSum;
-			}
 			if(i * Long.SIZE % largeBlockBits == 0) {
 				largeBlock[largeBlockIdx++] = sum;
 				smallSum = 0;
+			}
+			if(i * Long.SIZE % smallBlockBits == 0) {
+				smallBlock[smallBlockIdx++] = smallSum;
 			}
 			int popcnt = Long.bitCount(data[i]);
 			sum += popcnt;

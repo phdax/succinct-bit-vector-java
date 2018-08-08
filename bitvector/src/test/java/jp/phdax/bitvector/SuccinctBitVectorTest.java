@@ -51,6 +51,43 @@ public class SuccinctBitVectorTest {
 		assertThat(bv8.rank1(7), is(3));
 		assertThat(bv8.rank1(8), is(3));
 		assertThat(bv8.rank1(9999), is(3));
+		
+		SuccinctBitVector bv64 = b(64, 0b01000101);
+		assertThat(bv64.rank1(-1), is(-1));
+		assertThat(bv64.rank1(0), is(0));
+		assertThat(bv64.rank1(1), is(1));
+		assertThat(bv64.rank1(2), is(1));
+		assertThat(bv64.rank1(3), is(2));
+		assertThat(bv64.rank1(4), is(2));
+		assertThat(bv64.rank1(5), is(2));
+		assertThat(bv64.rank1(6), is(2));
+		assertThat(bv64.rank1(7), is(3));
+		assertThat(bv64.rank1(64), is(3));
+		assertThat(bv64.rank1(9999), is(3));
+		
+		SuccinctBitVector bv72 = b(72, 0b01000101, 0b10111010);
+		assertThat(bv72.rank1(64+0), is(3));
+		assertThat(bv72.rank1(64+1), is(3));
+		assertThat(bv72.rank1(64+2), is(4));
+		assertThat(bv72.rank1(64+3), is(4));
+		assertThat(bv72.rank1(64+4), is(5));
+		assertThat(bv72.rank1(64+5), is(6));
+		assertThat(bv72.rank1(64+6), is(7));
+		assertThat(bv72.rank1(64+7), is(7));
+		assertThat(bv72.rank1(64+8), is(8));
+		assertThat(bv72.rank1(64+9999), is(8));
+
+		SuccinctBitVector bv128 = b(128, 0b01000101, 0b10111010);
+		assertThat(bv128.rank1(64+0), is(3));
+		assertThat(bv128.rank1(64+1), is(3));
+		assertThat(bv128.rank1(64+2), is(4));
+		assertThat(bv128.rank1(64+3), is(4));
+		assertThat(bv128.rank1(64+4), is(5));
+		assertThat(bv128.rank1(64+5), is(6));
+		assertThat(bv128.rank1(64+6), is(7));
+		assertThat(bv128.rank1(64+7), is(7));
+		assertThat(bv128.rank1(64+64), is(8));
+		assertThat(bv128.rank1(64+9999), is(8));
 	}
 	
 	@Test
@@ -67,6 +104,43 @@ public class SuccinctBitVectorTest {
 		assertThat(bv8.rank0(7), is(4));
 		assertThat(bv8.rank0(8), is(5));
 		assertThat(bv8.rank0(9999), is(5));
+		
+		SuccinctBitVector bv64 = b(64, 0b01000101);
+		assertThat(bv64.rank0(-1), is(-1));
+		assertThat(bv64.rank0(0), is(0));
+		assertThat(bv64.rank0(1), is(0));
+		assertThat(bv64.rank0(2), is(1));
+		assertThat(bv64.rank0(3), is(1));
+		assertThat(bv64.rank0(4), is(2));
+		assertThat(bv64.rank0(5), is(3));
+		assertThat(bv64.rank0(6), is(4));
+		assertThat(bv64.rank0(7), is(4));
+		assertThat(bv64.rank0(64), is(61));
+		assertThat(bv64.rank0(9999), is(61));
+
+		SuccinctBitVector bv72 = b(72, 0b01000101, 0b10111010);
+		assertThat(bv72.rank0(64+0), is(61));
+		assertThat(bv72.rank0(64+1), is(62));
+		assertThat(bv72.rank0(64+2), is(62));
+		assertThat(bv72.rank0(64+3), is(63));
+		assertThat(bv72.rank0(64+4), is(63));
+		assertThat(bv72.rank0(64+5), is(63));
+		assertThat(bv72.rank0(64+6), is(63));
+		assertThat(bv72.rank0(64+7), is(64));
+		assertThat(bv72.rank0(64+8), is(64));
+		assertThat(bv72.rank0(64+9999), is(64));
+		
+		SuccinctBitVector bv128 = b(128, 0b01000101, 0b10111010);
+		assertThat(bv128.rank0(64+0), is(61));
+		assertThat(bv128.rank0(64+1), is(62));
+		assertThat(bv128.rank0(64+2), is(62));
+		assertThat(bv128.rank0(64+3), is(63));
+		assertThat(bv128.rank0(64+4), is(63));
+		assertThat(bv128.rank0(64+5), is(63));
+		assertThat(bv128.rank0(64+6), is(63));
+		assertThat(bv128.rank0(64+7), is(64));
+		assertThat(bv128.rank0(64+8), is(64));
+		assertThat(bv128.rank0(64+9999), is(120));
 	}
 	
 	@Test
