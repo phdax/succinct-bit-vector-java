@@ -1,6 +1,8 @@
 package jp.phdax.trie;
 
-public interface IBreadthFirstIterator<T> {
+import java.util.Iterator;
+
+public interface IBreadthFirstIterator<T> extends Iterator<T> {
 
 	public boolean hasNext();
 	public T next();

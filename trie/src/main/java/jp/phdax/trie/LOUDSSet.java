@@ -1,19 +1,23 @@
 package jp.phdax.trie;
 
-import jp.phdax.bitvector.BitVector;
 import jp.phdax.bitvector.BitVectorBuilder;
+import jp.phdax.bitvector.IBitVector;
 
-public class LOUDS {
+/**
+ * LOUDSを利用したSet構造です。
+ * @author phdax
+ */
+public class LOUDSSet implements ITrieSet {
 	
 	private final int dictSize;
 	private final int trieSize;
 	private final int maxLen;
-	private final BitVector tree;
-	private final BitVector leaf;
-	private final BitVector delim;
+	private final IBitVector tree;
+	private final IBitVector leaf;
+	private final IBitVector delim;
 	private final char[] chars;
 	
-	LOUDS(int dictSize, int trieSize, int maxLen, IBreadthFirstIterator<char[]> itr) {
+	LOUDSSet(int dictSize, int trieSize, int maxLen, IBreadthFirstIterator<char[]> itr) {
 		
 		final BitVectorBuilder treeBuilder = BitVectorBuilder.create();
 		final BitVectorBuilder leafBuilder = BitVectorBuilder.create();

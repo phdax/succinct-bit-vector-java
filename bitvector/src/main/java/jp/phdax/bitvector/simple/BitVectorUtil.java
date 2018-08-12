@@ -1,4 +1,4 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.simple;
 
 import java.lang.reflect.Field;
 
@@ -16,7 +16,7 @@ public enum BitVectorUtil {
 	    return bits;
 	}
 	
-	public static final String toString(BitVector2 bv) throws NoSuchFieldException, IllegalAccessException {
+	public static final String toString(BitVector bv) throws NoSuchFieldException, IllegalAccessException {
 		Class<?> clazz = bv.getClass();
 		Field fSize = clazz.getDeclaredField("size");
 		fSize.setAccessible(true);

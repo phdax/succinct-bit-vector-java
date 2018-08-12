@@ -1,4 +1,4 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.succinct;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -6,6 +6,8 @@ import static org.junit.Assert.assertThat;
 import java.util.Arrays;
 
 import org.junit.Test;
+
+import jp.phdax.bitvector.succinct.DenseSelectBlock;
 
 public class DenseSelectBlockTest {
 

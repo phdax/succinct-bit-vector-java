@@ -1,4 +1,6 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.succinct;
+
+import jp.phdax.bitvector.IBitVector;
 
 /**
  * 簡潔ビットベクトルの簡易的な実装クラスです。<br>
@@ -7,12 +9,12 @@ package jp.phdax.bitvector;
  * 小ブロックのサイズを64に固定する、疎密の判定を大ブロックごとでなくデータ全体で行うなど、<br>
  * 実装の都合上変更している箇所があります。<br>
  * <br>
- * また、可読性を重視するため乗算剰余算はビット演算に置換していません。<br>
+ * また、可読性を重視するため乗算剰余算はビット演算にしていません。<br>
  * TODO 速度重視用に、疎密固定・ビット演算化・JNAを通してselectをpdep命令とtzcnt命令で実装したクラスを用意<br>
  * @see 定兼 邦彦 (2018), "簡潔データ構造", 共立出版, https://www.amazon.co.jp/dp/4320121740
  * @author phdax
  */
-public class SuccinctBitVector {
+public class SuccinctBitVector implements IBitVector {
 	
 	private final int size;
 	private final long[] data;

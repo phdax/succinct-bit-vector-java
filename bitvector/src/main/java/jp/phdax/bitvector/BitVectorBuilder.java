@@ -2,6 +2,9 @@ package jp.phdax.bitvector;
 
 import java.util.Arrays;
 
+import jp.phdax.bitvector.simple.BitVector;
+import jp.phdax.bitvector.succinct.SuccinctBitVector;
+
 public class BitVectorBuilder {
 	
 	private int size;
@@ -10,7 +13,7 @@ public class BitVectorBuilder {
 	
 	private BitVectorBuilder(int size, long[] bits) {
 		this.bits = bits;
-		this.type = Type.DEFAULT;
+		this.type = Type.SIMPLE;
 		this.size = size;
 	}
 	
@@ -59,11 +62,8 @@ public class BitVectorBuilder {
 		return this;
 	}
 	
-	public BitVector build() {
-		if(type == Type.DEFAULT) {
-			return new BitVector(size, bits);
-		}
-		return null;
+	public IBitVector build() {
+		return type.build(size, bits);
 	}
 	
 	@Override
@@ -95,6 +95,18 @@ public class BitVectorBuilder {
 	}
 
 	public enum Type {
-		DEFAULT;
+		SIMPLE {
+			@Override
+			IBitVector build(int size, long[] bits) {
+				return new BitVector(size, bits);
+			}
+		},
+		SUCCINCT {
+			@Override
+			IBitVector build(int size, long[] bits) {
+				return new SuccinctBitVector(size, bits);
+			}
+		};
+		abstract IBitVector build(int size, long[] bits);
 	}
 }

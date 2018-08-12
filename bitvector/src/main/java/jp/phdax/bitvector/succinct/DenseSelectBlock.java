@@ -1,4 +1,4 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.succinct;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -1,9 +1,11 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.succinct;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
+
+import jp.phdax.bitvector.succinct.SuccinctBitVector;
 
 public class SuccinctBitVectorTest {
 

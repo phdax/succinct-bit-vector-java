@@ -1,14 +1,17 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.simple;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
+import jp.phdax.bitvector.simple.BitVector;
+import jp.phdax.bitvector.simple.BitVectorUtil;
+
 public class BitVectorUtilTest {
 	
-	private static final BitVector2 b(int size, long... bits) {
-		return new BitVector2(size, bits);
+	private static final BitVector b(int size, long... bits) {
+		return new BitVector(size, bits);
 	}
 	
 	@Test
@@ -22,13 +25,13 @@ public class BitVectorUtilTest {
 	
 	@Test
 	public void toStringTest() throws Exception {
-		BitVector2 bv4 = b(4, 0b00000101L);
+		BitVector bv4 = b(4, 0b00000101L);
 		assertThat(BitVectorUtil.toString(bv4), is("[1010]"));
-		BitVector2 bv8 = b(8, 0b01000101L);
+		BitVector bv8 = b(8, 0b01000101L);
 		assertThat(BitVectorUtil.toString(bv8), is("[10100010]"));
-		BitVector2 bv12 = b(12, 0b101101000101L);
+		BitVector bv12 = b(12, 0b101101000101L);
 		assertThat(BitVectorUtil.toString(bv12), is("[10100010,1101]"));
-		BitVector2 bv16 = b(16, 0b1110110000L);
+		BitVector bv16 = b(16, 0b1110110000L);
 		assertThat(BitVectorUtil.toString(bv16), is("[00001101,11000000]"));	
 	}
 }

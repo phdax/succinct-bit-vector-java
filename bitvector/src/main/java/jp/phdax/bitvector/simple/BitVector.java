@@ -1,6 +1,13 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.simple;
 
-public class BitVector2 {
+import jp.phdax.bitvector.IBitVector;
+
+/**
+ * rank, selectを実装する簡素なデータ構造です。<br>
+ * 補助データのオーダーがo(N)ではなくO(N)のため、簡潔データ構造ではありません。<br>
+ * @author phdax
+ */
+public class BitVector implements IBitVector {
 	
 	private final int size;
 	private final int sum;
@@ -9,7 +16,7 @@ public class BitVector2 {
 	private final int[] selectBlock1;
 	private final int[] selectBlock0;
 	
-	BitVector2(int size, long[] bits) {
+	public BitVector(int size, long[] bits) {
 		
 		if(size < 1) throw new IllegalArgumentException("Too small size.");
 		if(bits == null || bits.length == 0) throw new IllegalArgumentException("No bits.");
@@ -30,8 +37,8 @@ public class BitVector2 {
 		int select1Idx = 1;
 		int select0Idx = 1;
 		for(int i=1; i<rankBlock.length; i++) {
-			int rank1 = rankBlock[i];
-			int rank0 = (i << 6) - rank1;
+			final int rank1 = rankBlock[i];
+			final int rank0 = (i << 6) - rank1;
 			if(select1Idx << 6 < rank1) {
 				selectBlock1[select1Idx] = i;
 				select1Idx++;

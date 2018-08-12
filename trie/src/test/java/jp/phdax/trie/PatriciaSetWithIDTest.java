@@ -4,11 +4,11 @@ import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class PatriciaTest {
+public class PatriciaSetWithIDTest {
 	
 	@Test
 	public void putAndSizeTest() {
-		Patricia pat = new Patricia();
+		PatriciaSetWithID pat = new PatriciaSetWithID();
 		pat.put("aaa");
 		pat.put("aaa1");
 		pat.put("aaa2");
@@ -20,7 +20,7 @@ public class PatriciaTest {
 	
 	@Test
 	public void getIdTest() {
-		Patricia pat = new Patricia();
+		PatriciaSetWithID pat = new PatriciaSetWithID();
 		pat.put("aaa");
 		pat.put("aaa1");
 		pat.put("aaa2");
@@ -36,7 +36,7 @@ public class PatriciaTest {
 	
 	@Test
 	public void getTest() {
-		Patricia pat = new Patricia();
+		PatriciaSetWithID pat = new PatriciaSetWithID();
 		pat.put("aaa");
 		pat.put("aaa1");
 		pat.put("aaa2");
@@ -52,7 +52,7 @@ public class PatriciaTest {
 	
 	@Test
 	public void iteratorTest() {
-		Patricia pat = new Patricia();
+		PatriciaSetWithID pat = new PatriciaSetWithID();
 		pat.put("aaa");
 		pat.put("aaa1");
 		pat.put("aaa2");

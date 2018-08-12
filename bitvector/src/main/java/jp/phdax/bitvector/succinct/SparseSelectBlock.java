@@ -1,4 +1,4 @@
-package jp.phdax.bitvector;
+package jp.phdax.bitvector.succinct;
 
 public class SparseSelectBlock implements ISelectBlock {
 	private final int[] pos;
