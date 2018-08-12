@@ -1,5 +1,5 @@
 # succinct-bit-vector-java
-簡潔ビットベクトルの簡易的な実装です。
+![aaa](https://img.shields.io/badge/badge-test-green.svg?longCache=true&style=flat)
+![bbb](https://img.shields.io/badge/license-MIT-orange.svg?longCache=true&style=flat)
 
-現状、rank用インデックスがO(N)となる実装しか用意していないため、厳密には簡潔ビットベクトルではありません。
-
+簡潔ビットベクトルの簡易的な実装、およびそれを利用したデータ構造を束ねたリポジトリです。
