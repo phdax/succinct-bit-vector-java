@@ -1,5 +1,5 @@
 apply plugin: 'eclipse'
-apply plugin: 'java-library'
+apply plugin: 'java'
 
 group = 'jp.phdax'
 
@@ -13,6 +13,7 @@ repositories {
 dependencies {
   compile project(':bitvector')
   compile 'junit:junit:4.12'
+  testCompile 'junit:junit:4.12'
 }
 
 /*
