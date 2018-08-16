@@ -9,6 +9,7 @@ jobs:
       TERM: dumb
     steps:
       - checkout
-      - run: gradle dependencies
-      - run: gradle test
+      - run: ./master/gradlew -c ./master/settings.gradle dependencies
+      - run: ./master/gradlew -c ./master/settings.gradle :bitvector:test
+      - run: ./master/gradlew -c ./master/settings.gradle :trie:test
 
